@@ -42,6 +42,9 @@ const matchingEntry = data.data.find((item: ClosureEntry) => item.cc.index === t
 const formattedDate = formatDate(matchingEntry.cc.statusData.statusTimestamp.statusDate);
 const formattedTime = formatTime(matchingEntry.cc.statusData.statusTimestamp.statusTime);
 
+const formattedRefreshDate = formatDate(matchingEntry.cc.recordTimestamp.recordDate);
+const formattedRefreshTime = formatTime(matchingEntry.cc.recordTimestamp.recordTime);
+
 // update color during restrictions
 var activeStyle = "card";
 
@@ -59,6 +62,7 @@ if(matchingEntry.cc.statusData.status !== "R-0") {
             <h3>Chain Restrictions</h3>
             <p><strong>Current Restrictions:</strong> {matchingEntry.cc.statusData.statusDescription}</p>
             <p><strong>Last Restriction:</strong> {formattedDate} at {formattedTime}</p>
+            <p>Last data refresh: {formattedRefreshDate} at {formattedRefreshTime}</p>
         </div>
         <div class="cardSection">
             <h3>Location Info</h3>
