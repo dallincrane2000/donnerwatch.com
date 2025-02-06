@@ -1,0 +1,87 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LocationCard from '../components/locationCard.astro';
+
+const response = await fetch("https://cwwp2.dot.ca.gov/data/d3/cc/ccStatusD03.json");
+const data = await response.json();
+
+// Define locations
+const locations = [
+  { index: "3-NEV-80-13.5-E-192", friendlyName: "Truckee EastBound" },
+  { index: "3-NEV-80-13.5-W-200", friendlyName: "Truckee WestBound" },
+  { index: "3-NEV-80-18.6-W-199", friendlyName: "Overland Trail WestBound" },
+  { index: "3-NEV-80-22.4-E-193", friendlyName: "Boca EastBound" },
+  { index: "3-NEV-80-22.4-W-198", friendlyName: "Boca WestBound" },
+  { index: "3-NEV-80-27.2-E-194", friendlyName: "Floriston EastBound" },
+  { index: "3-NEV-80-27.13-W-197", friendlyName: "Floriston WestBound" },
+  { index: "3-NEV-80-R005.84L-E-251", friendlyName: "Castle Peak EastBound" },
+  { index: "3-NEV-80-R009.68L-W-201", friendlyName: "Donner Lake Interchange WestBound" },
+  { index: "3-NEV-80-R009R-E-191", friendlyName: "Donner Lake Interchange EastBound" },
+  { index: "3-NEV-80-R058.99-E-187", friendlyName: "Yuba Gap EastBound" },
+  { index: "3-NEV-80-R061.54L-W-250", friendlyName: "Eagle Lakes WestBound" },
+  { index: "3-PLA-80-26.07-E-179", friendlyName: "Applegate EastBound" },
+  { index: "3-PLA-80-33.19-E-180", friendlyName: "Colfax EastBound" },
+  { index: "3-PLA-80-33.19-W-210", friendlyName: "Colfax WestBound" },
+  { index: "3-PLA-80-41.3-E-181", friendlyName: "Gold Run EastBound" },
+  { index: "3-PLA-80-41.3-W-209", friendlyName: "Gold Run WestBound" },
+  { index: "3-PLA-80-43.78-W-208", friendlyName: "Alta WestBound" },
+  { index: "3-PLA-80-44.65-E-182", friendlyName: "Alta EastBound" },
+  { index: "3-PLA-80-46.8-E-183", friendlyName: "Baxter EastBound" },
+  { index: "3-PLA-80-46.9-W-207", friendlyName: "Baxter WestBound" },
+  { index: "3-PLA-80-48.88-E-184", friendlyName: "Drum EastBound" },
+  { index: "3-PLA-80-50.7R-E-185", friendlyName: "Whitmore EastBound" },
+  { index: "3-PLA-80-54.7-E-186", friendlyName: "Nyack EastBound" },
+  { index: "3-PLA-80-54.55-W-205", friendlyName: "Nyack WestBound" },
+  { index: "3-PLA-80-69.01-W-202", friendlyName: "Kingvale WestBound" },
+  { index: "3-PLA-80-69.22-E-190", friendlyName: "Kingvale EastBound" },
+  { index: "3-PLA-80-R026.2-W-211", friendlyName: "Applegate WestBound" },
+  { index: "3-PLA-80-R050.50L-W-206", friendlyName: "Drum (Whitmore) WestBound" },
+  { index: "3-PLA-80-R063.3-E-188", friendlyName: "Cisco Grove EastBound" },
+  { index: "3-PLA-80-R063.148-W-204", friendlyName: "Cisco Grove WestBound" },
+  { index: "3-PLA-80-R064.5R-E-189", friendlyName: "Rainbow EastBound" },
+  { index: "3-PLA-80-R066.66-W-203", friendlyName: "Rainbow WestBound" },
+  { index: "3-WAS-80-1-W-196", friendlyName: "Gold Ranch WestBound" },
+  { index: "3-WAS-80-2.84-E-195", friendlyName: "Gold Ranch EastBound" },
+  { index: "3-WAS-80-6.2-W-264", friendlyName: "Mogul WestBound" }
+];
+
+// Map data to locations
+const locationData = locations.map(location => {
+  return {
+    ...location,
+    entry: data.data.find(item => item.cc.index === location.index)
+  };
+});
+
+// Sort: Chain control first, then most recent update
+locationData.sort((a, b) => {
+  const aStatus = a.entry?.cc.statusData.status || "R-0";
+  const bStatus = b.entry?.cc.statusData.status || "R-0";
+
+  if (aStatus !== "R-0" && bStatus === "R-0") return -1;
+  if (aStatus === "R-0" && bStatus !== "R-0") return 1;
+
+  const aTimestamp = `${a.entry?.cc.statusData.statusTimestamp.statusDate} ${a.entry?.cc.statusData.statusTimestamp.statusTime}`;
+  const bTimestamp = `${b.entry?.cc.statusData.statusTimestamp.statusDate} ${b.entry?.cc.statusData.statusTimestamp.statusTime}`;
+
+  return bTimestamp.localeCompare(aTimestamp);
+});
+---
+
+<Layout>
+  {locationData.map(({ index, friendlyName, entry }) => (
+    <LocationCard data={data} index={index} friendlyName={friendlyName} />
+  ))}
+</Layout>
+
+<style>
+  ul > li > a {
+    text-decoration: none;
+    color: #778da9;
+    transition: all 0.4s linear;
+  }
+  ul > li > a:hover {
+    color: #e0e1dd;
+    text-decoration: none;
+  }
+</style>

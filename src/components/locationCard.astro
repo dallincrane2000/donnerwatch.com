@@ -1,0 +1,96 @@
+---
+const { data, index, friendlyName } = Astro.props;
+
+type ClosureEntry = {
+  cc: {
+    index: string;
+    statusData: {
+      statusDescription: string;
+      statusTimestamp: {
+        statusDate: string;
+        statusTime: string;
+      };
+    };
+    location: {
+      nearbyPlace: string;
+      longitude: string;
+      latitude: string;
+      elevation: string;
+    };
+  };
+};
+
+// Function to format time (24-hour → 12-hour AM/PM)
+const formatTime = (time: string): string => {
+  const [hours, minutes] = time.split(":").map(Number);
+  const period = hours >= 12 ? "PM" : "AM";
+  const formattedHours = hours % 12 || 12; // Convert 0 → 12 AM
+  return `${formattedHours}:${minutes.toString().padStart(2, "0")} ${period}`;
+};
+
+// Function to format date (YYYY-MM-DD → Month Day, Year)
+const formatDate = (date: string): string => {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+};
+
+// Find matching entry
+const targetLocationIndex = index;
+const matchingEntry = data.data.find((item: ClosureEntry) => item.cc.index === targetLocationIndex);
+
+// Extract formatted date & time
+const formattedDate = formatDate(matchingEntry.cc.statusData.statusTimestamp.statusDate);
+const formattedTime = formatTime(matchingEntry.cc.statusData.statusTimestamp.statusTime);
+
+// update color during restrictions
+var activeStyle = "card";
+
+if(matchingEntry.cc.statusData.status !== "R-0") {
+    activeStyle = "card active";
+} else {
+    activeStyle = "card";
+}
+---
+
+<div class={activeStyle}>
+    <h2>{friendlyName}</h2>
+    <div class="information">
+        <div class="cardSection">
+            <h3>Chain Restrictions</h3>
+            <p><strong>Current Restrictions:</strong> {matchingEntry.cc.statusData.statusDescription}</p>
+            <p><strong>Last Restriction:</strong> {formattedDate} at {formattedTime}</p>
+        </div>
+        <div class="cardSection">
+            <h3>Location Info</h3>
+            <p><strong>Nearest City:</strong> {matchingEntry.cc.location.nearbyPlace}</p>
+            <p><strong>Coordinates:</strong> {matchingEntry.cc.location.longitude}, {matchingEntry.cc.location.latitude}</p>
+            <p><strong>Elevation:</strong> {matchingEntry.cc.location.elevation} Feet</p>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    margin: 1rem;
+    background-color: #778da9;
+    padding: .5rem 2rem;
+    border-radius: 25px;
+    color: #0d1b2a;
+    display: flex;
+    flex-direction: column;
+}
+
+.card > .information {
+    display: flex;
+}
+
+.card > .information > .cardSection:nth-child(2) {
+    margin-left: 2rem;
+}
+
+.active {
+    color: #82204A;
+}
+
+
+</style>
